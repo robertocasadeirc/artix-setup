@@ -1,0 +1,90 @@
+# =========================================
+# ARTIX XFCE OPENRC SETUP - COMANDI BASE
+# =========================================
+
+# --- AGGIORNAMENTO SISTEMA ---
+sudo pacman -Syu
+
+# --- INSTALLAZIONE PACCHETTI BASE ---
+sudo pacman -S git openssh base-devel nano
+
+# --- RETE (OpenRC) ---
+sudo rc-service dhcpcd start
+sudo rc-update add dhcpcd default
+
+# (oppure NetworkManager)
+sudo pacman -S networkmanager
+sudo rc-service NetworkManager start
+sudo rc-update add NetworkManager default
+
+# --- INSTALLAZIONE YAY (AUR helper) ---
+git clone https://aur.archlinux.org/yay.git
+cd yay
+makepkg -si
+
+# --- UTILI TERMINALE ---
+sudo pacman -S htop neofetch wget curl rsync
+
+# --- CONFIGURAZIONE GIT ---
+git config --global user.name "Roberto Casadei"
+git config --global user.email "tua_email"
+
+# --- CREAZIONE CARTELLA PROGETTI ---
+mkdir -p ~/github
+cd ~/github
+
+# --- SSH SETUP ---
+ssh-keygen -t ed25519 -C "tua_email"
+
+# Avvia agente SSH
+eval "$(ssh-agent -s)"
+
+# Aggiungi chiave
+ssh-add ~/.ssh/id_ed25519
+
+# Mostra chiave pubblica (da copiare su GitHub)
+cat ~/.ssh/id_ed25519.pub
+
+# --- PERMESSI SSH (IMPORTANTISSIMO) ---
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/id_ed25519
+chmod 644 ~/.ssh/id_ed25519.pub
+
+# --- TEST SSH ---
+ssh -T git@github.com
+
+# --- CLONE REPOSITORY ---
+git clone git@github.com:robertocasadeirc/1note.git
+
+# --- FLUSSO GIT BASE ---
+git status
+git add .
+git commit -m "messaggio"
+git push
+git pull
+
+# --- SCRIPT UPDATE REPO ---
+nano ~/update-repos.sh
+
+# (contenuto script)
+#!/bin/bash
+
+BASE_DIR="$HOME/github"
+
+for dir in "$BASE_DIR"/*; do
+    if [ -d "$dir/.git" ]; then
+        echo "Repo: $(basename "$dir")"
+        cd "$dir" || continue
+        git pull --ff-only
+    fi
+done
+
+# Rendi eseguibile
+chmod +x ~/update-repos.sh
+
+# Alias
+echo 'alias update-repos="~/update-repos.sh"' >> ~/.bashrc
+source ~/.bashrc
+
+# --- COMANDO FINALE ---
+update-repos
