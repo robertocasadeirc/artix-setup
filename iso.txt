@@ -1,2 +1,2 @@
 #ISO DOWNLOAD
-url:...
+url:https://artix.arkhost.com/weekly-iso/
